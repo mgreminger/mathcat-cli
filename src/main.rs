@@ -14,6 +14,7 @@ fn main() {
     let mut rules_dir = String::new();
     let mut speech_style = String::from("ClearSpeak"); // Default
     let mut verbosity = String::from("Medium");        // Default
+    let mut language = String::from("en");             // Default
 
     // Parse CLI arguments
     let mut i = 1;
@@ -21,6 +22,10 @@ fn main() {
         match args[i].as_str() {
             "--rules-dir" if i + 1 < args.len() => {
                 rules_dir = args[i + 1].clone();
+                i += 1;
+            }
+            "--language" | "--lang" if i + 1 < args.len() => {
+                language = args[i + 1].clone();
                 i += 1;
             }
             "--style" if i + 1 < args.len() => {
@@ -46,7 +51,6 @@ fn main() {
         i += 1;
     }
 
-    // Fallbacks for rules_dir (Environment Var -> Executable Dir)
     if rules_dir.is_empty() {
         if let Ok(env_dir) = env::var("MATHCAT_RULES_DIR") {
             rules_dir = env_dir;
@@ -70,13 +74,16 @@ fn main() {
         process::exit(1);
     }
 
-    // Initialize MathCAT
+    // 1. INITIALIZE MATHCAT FIRST (loads the preference schema)
     if let Err(e) = set_rules_dir(rules_dir) {
         eprintln!("Failed to load MathCAT rules: {:?}", e);
         process::exit(1);
     }
 
-    // Set Preferences (Style and Verbosity)
+    // 2. SET PREFERENCES AFTER
+    if let Err(e) = set_preference("Language".to_string(), language) {
+        eprintln!("Warning: Failed to set Language: {:?}", e);
+    }
     if let Err(e) = set_preference("SpeechStyle".to_string(), speech_style) {
         eprintln!("Warning: Failed to set SpeechStyle: {:?}", e);
     }

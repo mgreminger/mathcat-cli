@@ -60,10 +60,11 @@ echo "<math><mi>x</mi></math>" | ./mathcat-cli
 If no flag or environment variable is set, the CLI automatically looks for a directory named `Rules` residing in the exact same folder as the running `mathcat-cli` binary.
 
 
-## Speech Preferences (Optional)
+## Command Line Options
 
 You can customize how the math is spoken using the `--style` and `--verbosity` flags. If omitted, the CLI defaults to `ClearSpeak` and `Medium`, which is generally preferred for engineering and educational content.
 
+* `--language` or `--lang`: The locale code for the spoken text (e.g., en, es, de, vi). The specified language folder must exist within your Rules/Languages directory. Defaults to en.
 * `--style`: Options are `ClearSpeak` (default), `MathSpeak`, or `SimpleSpeak`.
 * `--verbosity`: Options are `Terse`, `Medium` (default), or `Verbose`.
 

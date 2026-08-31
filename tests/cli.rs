@@ -106,6 +106,7 @@ fn test_style_mathspeak() {
     
     cmd.assert()
         .success()
+        .stderr(predicate::str::is_empty()) 
         .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1; end fraction"));
 }
 
@@ -138,17 +139,18 @@ fn test_verbosity_terse() {
     cmd.env_remove("MATHCAT_RULES_DIR");
     cmd.arg("--rules-dir").arg(rules.to_str().unwrap());
     
-    // Keeping MathSpeak but dropping Verbosity to Terse
     cmd.arg("--style").arg("MathSpeak");
     cmd.arg("--verbosity").arg("Terse");
     
     let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></math>"#;
     cmd.write_stdin(mathml);
     
-    // Proves that Terse drops the structural "end fraction" indicator compared to Verbose
+    // In true MathSpeak Terse mode, the closing structural indicator is dropped
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1"));
+        .stderr(predicate::str::is_empty()) 
+        .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1"))
+        .stdout(predicate::str::contains("end fraction").not());
 }
 
 #[test]
@@ -168,4 +170,25 @@ fn test_invalid_style_fails() {
     cmd.assert()
         .failure()
         .stderr(predicate::str::contains("Error: Invalid style 'FakeStyle'"));
+}
+
+#[test]
+fn test_language_spanish() {
+    let rules = get_rules_dir();
+    assert!(rules.exists(), "Missing ./Rules");
+
+    let mut cmd = Command::cargo_bin("mathcat-cli").unwrap();
+    cmd.env_remove("MATHCAT_RULES_DIR");
+    cmd.arg("--rules-dir").arg(rules.to_str().unwrap());
+    
+    // Test the language override
+    cmd.arg("--lang").arg("es");
+    
+    let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></math>"#;
+    cmd.write_stdin(mathml);
+    
+    cmd.assert()
+        .success()
+        .stderr(predicate::str::is_empty()) // Ensure setting the language didn't throw a warning
+        .stdout(predicate::str::contains("la fracción con numerador 1; y denominador x más 1"));
 }
