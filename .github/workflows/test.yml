@@ -1,0 +1,26 @@
+name: Test CLI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # cargo vendor fetches the resolved mathcat crate from crates.io 
+      # and unpacks it into ./vendor/
+      - name: Extract Rules from MathCAT Crate
+        run: |
+          cargo vendor
+          cp -r vendor/mathcat*/Rules ./Rules
+
+      - name: Run Tests
+        run: cargo test

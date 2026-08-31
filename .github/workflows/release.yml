@@ -1,0 +1,96 @@
+name: Release MathCAT CLI
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers when you push a tag like v1.0.0
+
+# Define the target upstream MathCAT version to pull rules for
+env:
+  MATHCAT_CRATE_VERSION: "0.7"
+
+jobs:
+  build-binaries:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            name: mathcat-cli-linux-x64
+            ext: ""
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: mathcat-cli-win-x64
+            ext: .exe
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: mathcat-cli-mac-x64
+            ext: ""
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: mathcat-cli-mac-arm64
+            ext: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      # Install cross for Linux MUSL static linking
+      - name: Install Cross (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build Binary (Mac/Win)
+        if: matrix.os != 'ubuntu-latest'
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build Binary via Cross (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Rename Artifact
+        shell: bash
+        run: |
+          mv target/${{ matrix.target }}/release/mathcat-cli${{ matrix.ext }} target/${{ matrix.target }}/release/${{ matrix.name }}${{ matrix.ext }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: target/${{ matrix.target }}/release/${{ matrix.name }}${{ matrix.ext }}
+
+  create-release:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download all compiled binaries from the previous job
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: bin/
+          merge-multiple: true
+
+      # Inside release.yml -> create-release job:
+      - name: Package Rules from Crate
+        run: |
+          cargo vendor
+          cd vendor/mathcat*/Rules
+          zip -r ../../../MathCAT-Rules.zip .
+
+      # Create the GitHub Release and upload all binaries + Rules.zip
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            bin/*
+            MathCAT-Rules-v${{ env.MATHCAT_CRATE_VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

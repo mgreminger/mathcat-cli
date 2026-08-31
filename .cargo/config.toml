@@ -1,0 +1,2 @@
+[alias]
+get-rules = "run --bin get_rules"

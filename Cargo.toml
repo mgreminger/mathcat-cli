@@ -1,0 +1,13 @@
+[package]
+name = "mathcat-cli"
+version = "0.1.0" # Your CLI version
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+# Set this to the exact MathCAT version you want to wrap
+mathcat = "0.7.5"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.0"
