@@ -49,7 +49,7 @@ fn test_rules_dir_via_flag() {
     
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("x plus y")); 
+        .stdout(predicate::eq("x plus y")); 
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn test_rules_dir_via_env_var() {
     
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("x plus y"));
+        .stdout(predicate::eq("x plus y"));
 }
 
 #[test]
@@ -86,11 +86,11 @@ fn test_default_preferences() {
     
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1"));
+        .stdout(predicate::eq("the fraction with numerator 1; and denominator x plus 1"));
 }
 
 #[test]
-fn test_style_mathspeak() {
+fn test_style_simplespeak() {
     let rules = get_rules_dir();
     assert!(rules.exists(), "Missing ./Rules");
 
@@ -98,16 +98,17 @@ fn test_style_mathspeak() {
     cmd.env_remove("MATHCAT_RULES_DIR");
     cmd.arg("--rules-dir").arg(rules.to_str().unwrap());
     
-    cmd.arg("--style").arg("MathSpeak");
+    cmd.arg("--style").arg("SimpleSpeak");
     cmd.arg("--verbosity").arg("Verbose");
     
     let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></math>"#;
     cmd.write_stdin(mathml);
     
+    // SimpleSpeak Verbose includes the structural indicators
     cmd.assert()
         .success()
         .stderr(predicate::str::is_empty()) 
-        .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1; end fraction"));
+        .stdout(predicate::eq("fraction, 1 over, x plus 1, end fraction"));
 }
 
 #[test]
@@ -127,7 +128,7 @@ fn test_style_clearspeak() {
     
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1"));
+        .stdout(predicate::eq("the fraction with numerator 1; and denominator x plus 1"));
 }
 
 #[test]
@@ -139,18 +140,17 @@ fn test_verbosity_terse() {
     cmd.env_remove("MATHCAT_RULES_DIR");
     cmd.arg("--rules-dir").arg(rules.to_str().unwrap());
     
-    cmd.arg("--style").arg("MathSpeak");
+    cmd.arg("--style").arg("ClearSpeak");
     cmd.arg("--verbosity").arg("Terse");
     
-    let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></math>"#;
+    // Use a nested fraction where Terse actually drops the "end fraction" structural indicators
+    let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mfrac><mn>1</mn><mi>y</mi></mfrac></mrow></mfrac></math>"#;
     cmd.write_stdin(mathml);
     
-    // In true MathSpeak Terse mode, the closing structural indicator is dropped
     cmd.assert()
         .success()
         .stderr(predicate::str::is_empty()) 
-        .stdout(predicate::str::contains("the fraction with numerator 1; and denominator x plus 1"))
-        .stdout(predicate::str::contains("end fraction").not());
+        .stdout(predicate::eq("the fraction with numerator 1; and denominator x plus 1 over y"));
 }
 
 #[test]
@@ -181,7 +181,6 @@ fn test_language_spanish() {
     cmd.env_remove("MATHCAT_RULES_DIR");
     cmd.arg("--rules-dir").arg(rules.to_str().unwrap());
     
-    // Test the language override
     cmd.arg("--lang").arg("es");
     
     let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></math>"#;
@@ -189,6 +188,6 @@ fn test_language_spanish() {
     
     cmd.assert()
         .success()
-        .stderr(predicate::str::is_empty()) // Ensure setting the language didn't throw a warning
-        .stdout(predicate::str::contains("la fracción con numerador 1; y denominador x más 1"));
+        .stderr(predicate::str::is_empty())
+        .stdout(predicate::eq("la fracción con numerador 1; y denominador x más 1"));
 }

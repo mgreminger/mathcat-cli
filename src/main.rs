@@ -30,8 +30,8 @@ fn main() {
             }
             "--style" if i + 1 < args.len() => {
                 let val = args[i + 1].clone();
-                if !["ClearSpeak", "MathSpeak", "SimpleSpeak"].contains(&val.as_str()) {
-                    eprintln!("Error: Invalid style '{}'. Valid options are: ClearSpeak, MathSpeak, SimpleSpeak.", val);
+                if !["ClearSpeak", "SimpleSpeak"].contains(&val.as_str()) {
+                    eprintln!("Error: Invalid style '{}'. Valid options are: ClearSpeak, SimpleSpeak.", val);
                     process::exit(1);
                 }
                 speech_style = val;
