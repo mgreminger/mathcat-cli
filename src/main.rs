@@ -4,21 +4,6 @@ use std::process;
 use libmathcat::{set_rules_dir, set_mathml, get_spoken_text, set_preference};
 
 fn main() {
-    // =========================================================================
-    // ULTIMATE PRODUCTION SANDBOX
-    // Required for Electron app determinism across varying user environments.
-    // =========================================================================
-    let dummy_path = env::temp_dir().join("mathcat_isolated_sandbox");
-    env::set_var("HOME", &dummy_path);
-    env::set_var("XDG_CONFIG_HOME", &dummy_path);
-    env::set_var("XDG_DATA_HOME", &dummy_path);
-    env::set_var("XDG_CONFIG_DIRS", &dummy_path);
-    env::set_var("XDG_DATA_DIRS", &dummy_path);
-    env::set_var("LANG", "en"); 
-    env::set_var("LC_ALL", "en");
-    env::remove_var("MATHCAT_USER_PREFERENCES"); 
-    // =========================================================================
-
     let args: Vec<String> = env::args().collect();
 
     if args.contains(&String::from("--version")) || args.contains(&String::from("-V")) {

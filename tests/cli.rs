@@ -144,7 +144,8 @@ fn test_verbosity_terse() {
     
     let mathml = r#"<math><mfrac><mn>1</mn><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow></mfrac></math>"#;
     cmd.write_stdin(mathml);
-
+    
+    // In true MathSpeak Terse mode, the closing structural indicator is dropped
     cmd.assert()
         .success()
         .stderr(predicate::str::is_empty()) 
