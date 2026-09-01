@@ -65,12 +65,12 @@ If no flag or environment variable is set, the CLI automatically looks for a dir
 You can customize how the math is spoken using the `--style` and `--verbosity` flags. If omitted, the CLI defaults to `ClearSpeak` and `Medium`, which is generally preferred for engineering and educational content.
 
 * `--language` or `--lang`: The locale code for the spoken text (e.g., en, es, de, vi). The specified language folder must exist within your Rules/Languages directory. Defaults to en.
-* `--style`: Options are `ClearSpeak` (default), `MathSpeak`, or `SimpleSpeak`.
+* `--style`: Options are `ClearSpeak` (default) or `SimpleSpeak`.
 * `--verbosity`: Options are `Terse`, `Medium` (default), or `Verbose`.
 
 **Example:**
 ```bash
-echo "<math><mfrac><mn>1</mn><mi>x</mi></mfrac></math>" | ./mathcat-cli --style MathSpeak --verbosity Verbose
+echo "<math><mfrac><mn>1</mn><mi>x</mi></mfrac></math>" | ./mathcat-cli --style SimpleSpeak --verbosity Verbose
 ```
 
 
