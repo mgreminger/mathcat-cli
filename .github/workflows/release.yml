@@ -7,7 +7,7 @@ on:
 
 # Define the target upstream MathCAT version to pull rules for
 env:
-  MATHCAT_CRATE_VERSION: "0.7"
+  MATHCAT_CRATE_VERSION: "0.7.5"
 
 jobs:
   build-binaries:
