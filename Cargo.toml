@@ -5,7 +5,6 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-env_logger = "0.11.11"
 # Set this to the exact MathCAT version you want to wrap
 mathcat = "0.7.5"
 
