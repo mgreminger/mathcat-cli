@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*' # Triggers when you push a tag like v1.0.0
 
+# 1. ADD THIS BLOCK: Grant the workflow permission to create a release
+permissions:
+  contents: write
+
 # Define the target upstream MathCAT version to pull rules for
 env:
   MATHCAT_CRATE_VERSION: "0.7.5"
@@ -78,12 +82,12 @@ jobs:
           path: bin/
           merge-multiple: true
 
-      # Inside release.yml -> create-release job:
+      # Create the rules zip file
       - name: Package Rules from Crate
         run: |
           cargo vendor
           cd vendor/mathcat*/Rules
-          zip -r ../../../MathCAT-Rules.zip .
+          zip -r ../../../MathCAT-Rules-v${{ env.MATHCAT_CRATE_VERSION }}.zip .
 
       # Create the GitHub Release and upload all binaries + Rules.zip
       - name: Publish Release
